@@ -7,12 +7,27 @@ contract L2GasUsed {
     // storage root => (address => gas used)
     mapping(bytes32 => mapping(address => uint256)) public gasUsed;
     // address => storage root
-    mapping(address => bytes32) public lastValue;
+    mapping(address => bytes32) public lastStorageRoot;
 
-    event NewValue(address addr, bytes32 storageRoot, bytes32 value);
+    event NewValue(address addr, bytes32 storageRoot, uint256 value);
 
-    function getLastValue(address addr) public view returns (bytes32) {
-        return lastValue[addr];
+    function getStorageRoot(bytes32 stateRoot) public view returns (bytes32) {
+        return storageRoots[stateRoot];
+    }
+
+    function getGasUsed(
+        bytes32 storageRoot,
+        address addr
+    ) public view returns (uint256) {
+        return gasUsed[storageRoot][addr];
+    }
+
+    function getLastStorageRoot(address addr) public view returns (bytes32) {
+        return lastStorageRoot[addr];
+    }
+
+    function getLastValue(address addr) public view returns (uint256) {
+        return getGasUsed(getLastStorageRoot(addr), addr);
     }
 
     function verifyAndSetStorageRoot(
@@ -33,10 +48,18 @@ contract L2GasUsed {
         uint256 value,
         bytes32[] memory proof
     ) public {
+        bytes32 storageKey = keccak256(abi.encode(addr, 0));
+
         // Verify the Merkle proof
         // require(verifyMerkleProof(_addr, value, proof, stateRoot), "Invalid Merkle proof");
 
         // If proof is valid, set the value in the mapping
         gasUsed[storageRoot][addr] = value;
+
+        if (value > getLastValue(addr)) {
+            lastStorageRoot[addr] = storageRoot;
+        }
+
+        emit NewValue(addr, storageRoot, value);
     }
 }
