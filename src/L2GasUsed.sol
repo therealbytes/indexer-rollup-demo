@@ -6,6 +6,14 @@ contract L2GasUsed {
     mapping(bytes32 => bytes32) public storageRoots;
     // storage root => (address => gas used)
     mapping(bytes32 => mapping(address => uint256)) public gasUsed;
+    // address => storage root
+    mapping(address => bytes32) public lastValue;
+
+    event NewValue(address addr, bytes32 storageRoot, bytes32 value);
+
+    function getLastValue(address addr) public view returns (bytes32) {
+        return lastValue[addr];
+    }
 
     function verifyAndSetStorageRoot(
         bytes32 stateRoot,
