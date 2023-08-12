@@ -1,8 +1,30 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {SecureMerkleTrie} from "./trie/SecureMerkleTrie.sol";
-import {RLPWriter} from "./rlp/RLPWriter.sol";
+import {SecureMerkleTrie} from "./op-lib/trie/SecureMerkleTrie.sol";
+import {RLPWriter} from "./op-lib/rlp/RLPWriter.sol";
+
+interface IL2GasUsed {
+    function getGasUsed(
+        bytes32 storageRoot,
+        address addr
+    ) external view returns (uint256);
+
+    function getLastStorageRoot(address addr) external view returns (bytes32);
+
+    function getTotalProvenGas(
+        bytes32 storageRoot
+    ) external view returns (uint256);
+
+    function getLastGasUsed(address addr) external view returns (uint256);
+
+    function verifyAndSetGasUsed(
+        bytes32 storageRoot,
+        address addr,
+        uint256 value,
+        bytes32[] memory proof
+    ) external;
+}
 
 contract L2GasUsed {
     event NewValue(address addr, bytes32 storageRoot, uint256 value);
@@ -39,7 +61,7 @@ contract L2GasUsed {
         bytes32 storageRoot,
         address addr,
         uint256 value,
-        bytes32[] memory proof
+        bytes[] memory proof
     ) public {
         if (getGasUsed(storageRoot, addr) > 0) {
             revert("Gas used already set");
