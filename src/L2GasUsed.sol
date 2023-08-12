@@ -67,7 +67,7 @@ contract L2GasUsed {
             revert("Gas used already set");
         }
 
-        bytes32 storageKey = keccak256(abi.encode(addr, 0));
+        bytes32 storageKey = keccak256(abi.encode(addr, uint256(0)));
 
         // Verify the Merkle proof
         require(
