@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const contractL1 = new ethers.Contract(L1_CONTRACT_ADDRESS, L1_CONTRACT_ABI, walletL1);
 
     let targetAddress = "0x0000000000000000000000000000000000000000";
+    let chart;
 
     const urlAddr = getURLParameter('address');
     if (ethers.utils.isAddress(urlAddr)) {
@@ -73,22 +74,22 @@ document.addEventListener('DOMContentLoaded', async function () {
         return hash;
     }
 
-    async function updateData(address) {
+    async function getGasUsedAtBlock(address, blockNumber) {
         const key = storageKey(address);
-        console.log("Storage key: ", key);
-
-        const proofIdx = await providerIndexer.send('eth_getProof', [INDEXER_CONTRACT_ADDRESS, [key], 'latest']);
+        const proofIdx = await providerIndexer.send('eth_getProof', [INDEXER_CONTRACT_ADDRESS, [key], blockNumber]);
         const gasIdxHex = proofIdx.storageProof[0].value;
-        console.log("Proof: ", proofIdx);
-
         const gasIdxBigNumber = ethers.BigNumber.from(gasIdxHex);
+        return gasIdxBigNumber;
+    }
+
+    async function updateData(address) {
+        const gasIdxBigNumber = await getGasUsedAtBlock(address, 'latest');
         const gasL1Hex = await contractL1.getLastGasUsed(address);
         const gasL1BigNumber = ethers.BigNumber.from(gasL1Hex);
-
         const gasIdxMM = gasIdxBigNumber.div(1000).toNumber() / 1000;
         const gasL1MM = gasL1BigNumber.div(1000).toNumber() / 1000;
         const deltaMM = gasIdxBigNumber.sub(gasL1BigNumber).div(1000).toNumber() / 1000;
-        setData(gasL1MM, gasIdxMM, "+" + deltaMM);
+        setData(gasL1MM + " M", gasIdxMM + " M", "+" + deltaMM + " M");
     }
 
     async function sendProof(address) {
@@ -136,7 +137,67 @@ document.addEventListener('DOMContentLoaded', async function () {
         updateData(address);
     }
 
-    // Placeholder hooks for button clicks
+    async function updateChart(address) {
+        let blockNumber = await providerIndexer.getBlockNumber();
+        let blockNumbers = [];
+        while (blockNumber > 10 && blockNumbers.length < 10) {
+            blockNumbers.push(blockNumber);
+            blockNumber -= 10;
+        }
+        blockNumbers = blockNumbers.reverse();
+        console.log("Block numbers: ", blockNumbers);
+        let gasUsed = [];
+        for (let i = 0; i < blockNumbers.length; i++) {
+            // TODO: wait in parallel
+            gasUsed.push(await getGasUsedAtBlock(address, '0x' + blockNumbers[i].toString(16)));
+        }
+        gasUsed = gasUsed.map((x) => x.div(100000).toNumber() / 10);
+        console.log("Gas used: ", gasUsed);
+
+        if (!chart) {
+            const chartData = {
+                labels: blockNumbers,
+                datasets: [{
+                    // label: 'Total Gas Used',
+                    borderColor: '#10b981',
+                    data: gasUsed,
+                    fill: false,
+                }]
+            };
+
+            const config = {
+                type: 'line',
+                data: chartData,
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Block Number'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Million Gas'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            };
+
+            chart = new Chart(document.getElementById('chart'), config);
+        } else {
+            chart.data.labels = blockNumbers;
+            chart.data.datasets[0].data = gasUsed;
+            chart.update();
+        }
+    }
 
     // Form submission event
     document.getElementById('search-form').addEventListener('submit', function (event) {
@@ -167,6 +228,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Any other actions you want on form submission
         setAddress(address);
         updateData(address);
+        updateChart(address);
     });
 
     // Update button
@@ -176,10 +238,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Example: Update the text boxes
     updateData(getAddress());
+    updateChart(getAddress());
 
     providerIndexer.on('block', (blockNumber) => {
         if (blockNumber % 1 === 0) {
             updateData(getAddress());
+        }
+        if (blockNumber % 10 === 0) {
+            updateChart(getAddress());
         }
     });
 });
