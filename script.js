@@ -3,20 +3,20 @@ document.addEventListener('DOMContentLoaded', async function () {
     const utils = ethers.utils;
 
     // Define constants
-    const RPC_URL_L1 = 'http://localhost:9545';
+    const RPC_URL_L2 = 'http://localhost:9545';
     const RPC_URL_INDEXER = 'http://localhost:10545';
-    const L1_CONTRACT_ADDRESS = '0xe1Aa25618fA0c7A1CFDab5d6B456af611873b629';
+    const L2_CONTRACT_ADDRESS = '0x700b6A60ce7EaaEA56F065753d8dcB9653dbAD35';
     const INDEXER_CONTRACT_ADDRESS = '0x1100000000000000000000000000000000000011'
-    const L1_CONTRACT_ABI = '[{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"addr","type":"address"},{"indexed":false,"internalType":"bytes32","name":"storageRoot","type":"bytes32"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"NewValue","type":"event"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"},{"internalType":"address","name":"","type":"address"}],"name":"gasUsed","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"storageRoot","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"}],"name":"getGasUsed","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"addr","type":"address"}],"name":"getLastGasUsed","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"addr","type":"address"}],"name":"getLastStorageRoot","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"storageRoot","type":"bytes32"}],"name":"getTotalProvenGas","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lastStorageRoot","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"totalProvenGas","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"storageRoot","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"bytes[]","name":"proof","type":"bytes[]"}],"name":"verifyAndSetGasUsed","outputs":[],"stateMutability":"nonpayable","type":"function"}]';
+    const L2_CONTRACT_ABI = '[{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"addr","type":"address"},{"indexed":false,"internalType":"bytes32","name":"storageRoot","type":"bytes32"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"NewValue","type":"event"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"},{"internalType":"address","name":"","type":"address"}],"name":"gasUsed","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"storageRoot","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"}],"name":"getGasUsed","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"addr","type":"address"}],"name":"getLastGasUsed","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"addr","type":"address"}],"name":"getLastStorageRoot","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"storageRoot","type":"bytes32"}],"name":"getTotalProvenGas","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lastStorageRoot","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"totalProvenGas","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"storageRoot","type":"bytes32"},{"internalType":"address","name":"addr","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"bytes[]","name":"proof","type":"bytes[]"}],"name":"verifyAndSetGasUsed","outputs":[],"stateMutability":"nonpayable","type":"function"}]';
     const PRIVATE_KEY = "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6";
 
     // Create providers for each RPC using ethers.js
-    const providerL1 = new ethers.providers.JsonRpcProvider(RPC_URL_L1);
+    const providerL2 = new ethers.providers.JsonRpcProvider(RPC_URL_L2);
     const providerIndexer = new ethers.providers.JsonRpcProvider(RPC_URL_INDEXER);
 
     // Create a Wallet instance with the private key and connect it to the provider
-    const walletL1 = new ethers.Wallet(PRIVATE_KEY, providerL1);
-    const contractL1 = new ethers.Contract(L1_CONTRACT_ADDRESS, L1_CONTRACT_ABI, walletL1);
+    const walletL2 = new ethers.Wallet(PRIVATE_KEY, providerL2);
+    const contractL2 = new ethers.Contract(L2_CONTRACT_ADDRESS, L2_CONTRACT_ABI, walletL2);
 
     let targetAddress = "0x0000000000000000000000000000000000000000";
     let chart;
@@ -32,9 +32,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // Function to update the three text boxes
-    function setData(l1Value, indexerValue, deltaValue) {
-        console.log("Setting data: ", l1Value, indexerValue, deltaValue);
-        document.getElementById('textbox-l1').textContent = l1Value;
+    function setData(l2Value, indexerValue, deltaValue) {
+        console.log("Setting data: ", l2Value, indexerValue, deltaValue);
+        document.getElementById('textbox-l2').textContent = l2Value;
         document.getElementById('textbox-index').textContent = indexerValue;
         document.getElementById('textbox-delta').textContent = deltaValue;
     }
@@ -84,12 +84,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     async function updateData(address) {
         const gasIdxBigNumber = await getGasUsedAtBlock(address, 'latest');
-        const gasL1Hex = await contractL1.getLastGasUsed(address);
-        const gasL1BigNumber = ethers.BigNumber.from(gasL1Hex);
+        const gasL2Hex = await contractL2.getLastGasUsed(address);
+        const gasL2BigNumber = ethers.BigNumber.from(gasL2Hex);
         const gasIdxMM = gasIdxBigNumber.div(1000).toNumber() / 1000;
-        const gasL1MM = gasL1BigNumber.div(1000).toNumber() / 1000;
-        const deltaMM = gasIdxBigNumber.sub(gasL1BigNumber).div(1000).toNumber() / 1000;
-        setData(gasL1MM + " M", gasIdxMM + " M", "+" + deltaMM + " M");
+        const gasL2MM = gasL2BigNumber.div(1000).toNumber() / 1000;
+        const deltaMM = gasIdxBigNumber.sub(gasL2BigNumber).div(1000).toNumber() / 1000;
+        setData(gasL2MM + " M", gasIdxMM + " M", "+" + deltaMM + " M");
     }
 
     async function sendProof(address) {
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         try {
             // Call a function that might revert
-            const txResponse = await contractL1.verifyAndSetGasUsed(
+            const txResponse = await contractL2.verifyAndSetGasUsed(
                 proofIdx.storageHash,
                 address,
                 proofIdx.storageProof[0].value,
