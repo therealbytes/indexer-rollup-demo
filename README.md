@@ -1,6 +1,6 @@
-# Rollup Indexer Demo
+# Indexer Rollup Demo
 
-- [Rollup indexer Optimism fork](https://github.com/therealbytes/indexer-rollup)
-- [Rollup indexer op-geth fork](https://github.com/therealbytes/indexer-op-geth)
+- [Indexer Rollup Optimism fork](https://github.com/therealbytes/indexer-rollup)
+- [Indexer Rollup op-geth fork](https://github.com/therealbytes/indexer-op-geth)
 
 ![UI Screenshot](img/idx-ui-screenshot.png)
